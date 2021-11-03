@@ -91,7 +91,7 @@ public class TestScene extends Scene{
             assert false : "";
         }
 
-        // Link shaders and check for errors
+        // Link shaders and check for errors.
         shaderProgram = glCreateProgram();
         glAttachShader(shaderProgram, vertexID);
         glAttachShader(shaderProgram, fragmentID);
