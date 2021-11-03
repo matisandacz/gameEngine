@@ -1,0 +1,20 @@
+VIDEO SERIES: https://www.youtube.com/playlist?list=PLdPphdv2-02jr6QT5UXTLas0Mg4HiVclu + https://www.youtube.com/playlist?list=PLdPphdv2-02hgtmx5WaC0yV8BE8FgmlTz
+THECHERNO FOR OPENGL:https://www.youtube.com/watch?v=Bcs56Mm-FJY&t=362s
+
+
+1) Drawing a window to the screen.
+2) Adding event callback functions.
+3) Adding Delta time and Scene. TODO: Multiple Scenes support.
+4) Rendering a square to the screen using openGL and understand: Vertex Buffer (VBO) + Element Buffer (EBO) w/ drawElements +
+Laying out Vertex Buffer w/ VertexAttribPointer + Verex Array (VAO) Avoid binding VBO and Layout every time. Save config.
+
+--------------------------
+
+TheCherno: 13-17.
+5) Abstracting openGL into classes.
+6) Creating a renderer with a 3D camera.
+7) Textures
+
+ThinMatrix: 9-10
+8) Loading 3D Models.
+
