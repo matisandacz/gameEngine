@@ -61,7 +61,7 @@ public class TestScene extends Scene{
     // Link shaders.
     @Override
     public void init() {
-        // First load and compile the vertex shader
+        // First load and compile the vertex shader.
         vertexID = glCreateShader(GL_VERTEX_SHADER);
 
         // Pass the shader source to the GPU
@@ -91,7 +91,7 @@ public class TestScene extends Scene{
             assert false : "";
         }
 
-        // Link shaders and check for errors.
+        // Link shaders and check for errors...
         shaderProgram = glCreateProgram();
         glAttachShader(shaderProgram, vertexID);
         glAttachShader(shaderProgram, fragmentID);
