@@ -12,9 +12,17 @@ Laying out Vertex Buffer w/ VertexAttribPointer + Verex Array (VAO) Avoid bindin
 
 TheCherno: 13-17.
 5) Abstracting openGL into classes.
-6) Creating a renderer with a 3D camera.
-7) Textures
+.) Extract vertex buffer and index buffer into classes. OK
+.) Extract vertex array
+.) Extract shaders.
 
+6) Creating a renderer with a 3D camera.
+.) Added uniform camera to shader. OK.
+.) TODO: create a class to setup the matrices given some parameters.
+and render some 3D cube.
+
+
+7) Textures
 ThinMatrix: 9-10
 8) Loading 3D Models.
 

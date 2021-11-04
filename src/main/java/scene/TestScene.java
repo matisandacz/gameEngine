@@ -1,5 +1,6 @@
 package scene;
 
+import org.joml.Matrix4f;
 import org.lwjgl.BufferUtils;
 
 import java.nio.FloatBuffer;
@@ -13,7 +14,10 @@ public class TestScene extends Scene{
 
     private int vertexID, fragmentID, shaderProgram;
 
-    private float[] vertexArray = {
+    private VertexBuffer vb;
+    private IndexBuffer ib;
+
+    private final float[] vertexArray = {
             // position               // color
             0.5f, -0.5f, 0.0f,       1.0f, 0.0f, 0.0f, 1.0f, // Bottom right 0
             -0.5f,  0.5f, 0.0f,       0.0f, 1.0f, 0.0f, 1.0f, // Top left     1
@@ -22,7 +26,7 @@ public class TestScene extends Scene{
     };
 
     // IMPORTANT: Must be in counter-clockwise order
-    private int[] elementArray = {
+    private final int[] elementArray = {
             /*
                     1        2
                     3        0
@@ -31,8 +35,7 @@ public class TestScene extends Scene{
             0, 1, 3 // bottom left triangle
     };
 
-    private int vaoID, vboID, eboID;
-
+    private int vaoID;
 
     private String vertexShaderSrc = "#version 330 core\n" +
             "layout (location=0) in vec3 aPos;\n" +
@@ -40,21 +43,24 @@ public class TestScene extends Scene{
             "\n" +
             "out vec4 fColor;\n" +
             "\n" +
+            "uniform mat4 mvp;\n" +
+            "\n" +
             "void main()\n" +
             "{\n" +
             "    fColor = aColor;\n" +
-            "    gl_Position = vec4(aPos, 1.0);\n" +
+            "    gl_Position = mvp * vec4(aPos,1.0);\n" +
             "}";
 
     private String fragmentShaderSrc = "#version 330 core\n" +
             "\n" +
             "in vec4 fColor;\n" +
-            "\n" +
             "out vec4 color;\n" +
+            "\n" +
+            "uniform vec4 u_Color;\n" +
             "\n" +
             "void main()\n" +
             "{\n" +
-            "    color = fColor;\n" +
+            "    color = u_Color;\n" +
             "}";
 
     // Load and compile vertex and fragment shader.
@@ -106,46 +112,35 @@ public class TestScene extends Scene{
             assert false : "";
         }
 
+        // Set color uniform variable
+        glUseProgram(shaderProgram);
+        int Colorlocation = glGetUniformLocation(shaderProgram, "u_Color");
+        glUniform4f(Colorlocation, 0.2f, 0.3f, 0.8f, 1.0f);
+
+        // Set matrix uniform variable
+        glUseProgram(shaderProgram);
+        int mvpLocation = glGetUniformLocation(shaderProgram, "mvp");
+        Matrix4f mvpMatrix = new Matrix4f();
+        mvpMatrix.identity();
+        FloatBuffer matBuffer = BufferUtils.createFloatBuffer(16);
+        mvpMatrix.get(matBuffer);
+        glUniformMatrix4fv(mvpLocation, false, matBuffer);
+
+
         // ============================================================
         // Generate VAO, VBO, and EBO buffer objects, and send to GPU
         // ============================================================
 
 
-        // Create VAO and bind.
+        // Create VAO and bind. VAO = Vertex Array.
         vaoID = glGenVertexArrays();
         glBindVertexArray(vaoID);
 
-        // Create VBO upload the vertex buffer. (Positions / Colors / Normals...) Bunch of bytes. Vertex Buffer Object.
-        vboID = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, vboID);
-
-        // Create a float buffer of vertices
-        FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(vertexArray.length);
-        vertexBuffer.put(vertexArray).flip();
-
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW);
-
-        /* ---------------------------------------- */
-
-        // Create EBO. Index Buffer/Element buffer Object.
-        eboID = glGenBuffers();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
-
-        // Create the indices and upload
-        IntBuffer elementBuffer = BufferUtils.createIntBuffer(elementArray.length);
-        elementBuffer.put(elementArray).flip();
-
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, elementBuffer, GL_STATIC_DRAW);
-
-        /* ---------------------------------------- */
+        // Create vertex buffer. 1 Vertex may be composed of many attributes.
+        vb = new VertexBuffer(vertexArray);
 
 
-        /* ---------------------------------------- */
-
-        // ID -> BUFFERS.
-        // We need to be able to tell OPENGL how to interpret the vertex Buffer at vboID.
-
-        // Add the vertex attribute pointers
+        // Layout of Vertex Buffer.
         int positionsSize = 3;
         int colorSize = 4;
         int floatSizeBytes = 4;
@@ -156,6 +151,9 @@ public class TestScene extends Scene{
 
         glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, positionsSize * floatSizeBytes);
         glEnableVertexAttribArray(1);
+
+        // Create EBO. Index Buffer/Element buffer Object.
+        ib = new IndexBuffer(elementArray);
 
 
     }
@@ -169,7 +167,8 @@ public class TestScene extends Scene{
         // Bind the VAO that we're using
         glBindVertexArray(vaoID);
         // Bind element buffer
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
+        //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
+        ib.bind();
 
         // Enable the vertex attribute pointers
         glEnableVertexAttribArray(0);
@@ -180,6 +179,8 @@ public class TestScene extends Scene{
         // Unbind everything
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
+
+        ib.unBind();
 
         glBindVertexArray(0);
 
