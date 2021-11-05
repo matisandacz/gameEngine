@@ -1,14 +1,21 @@
 package window;
 
+import org.joml.Matrix4f;
+import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
+import renderer.Shader;
+import scene.IndexBuffer;
+import scene.VertexBuffer;
 
 import java.nio.FloatBuffer;
 
+import static org.lwjgl.opengl.ARBVertexArrayObject.glBindVertexArray;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL15C.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL15C.GL_STATIC_DRAW;
 import static org.lwjgl.opengl.GL20.glEnableVertexAttribArray;
 import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
+import static org.lwjgl.opengl.GL30C.glGenVertexArrays;
 
 
 public class theChernoClass {
@@ -19,59 +26,65 @@ public class theChernoClass {
             0, 1, 3
     };
 
+    private Shader defaultShader;
+    private Matrix4f transformation = new Matrix4f();
+    private VertexBuffer vbo;
+    private IndexBuffer ibo;
+
+    private int vaoID;
+
     public void init() {
 
-        int floatSizeBytes = 4;
-        float[] positions = {
-                // position
-                0.5f, -0.5f, 0.0f, //br 0
-                -0.5f,  0.5f, 0.0f, //tl 1
-                0.5f,  0.5f, 0.0f, //tr 2
-                -0.5f, -0.5f, 0.0f //bl 3
+        defaultShader = new Shader("assets/shaders/default.glsl");
+        defaultShader.compile();
+
+        transformation.identity();
+        transformation.ortho(-6.0f, 5.0f, -5.0f, 5.0f, -5.0f, 5.0f);
+        defaultShader.setUniformMat4f("transformation", transformation);
+
+        float[] vertexArray = {
+                // position               // color
+                5.5f, -5.5f, 0f,       1.0f, 0.0f, 0.0f, 1.0f, // Bottom right 0
+                -5.5f,  5.5f, 0f,       0.0f, 1.0f, 0.0f, 1.0f, // Top left     1
+                5.5f,  5.5f, 0f ,      1.0f, 0.0f, 1.0f, 1.0f, // Top right    2
+                -5.5f, -5.5f, 0f,       1.0f, 1.0f, 0.0f, 1.0f // Bottom left  3
         };
 
-        int buffer;
-        buffer = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, buffer); //VERTEX BUFFER.
+        vaoID = glGenVertexArrays();
+        glBindVertexArray(vaoID);
 
-        FloatBuffer positionBuffer = BufferUtils.createFloatBuffer(positions.length);
-        positionBuffer.put(positions).flip();
+        vbo = new VertexBuffer(vertexArray);
 
-        glBufferData(GL_ARRAY_BUFFER, positionBuffer, GL_STATIC_DRAW);
-
-
-        // LAYOUT OF THE VERTEX BUFFER INTO INDICES!!
-
-        // Index : Map a vertex attribute to an index to pass it to the fragment shader.
-        // Size : Count (How many floats per attribute at index). (Ex: floats for pos: 3, floats for color: 4, floats for texture: 2, etc).
-        // Type: Float.
-        // Normalized:
-        // Stride: Ammount of bytes between each vertex.
-        // Pointer: Pretend you only have 1 vertex. What is the offset (in bytes) for the attribute you want?
+        // Layout of Vertex Buffer.
+        int floatSizeBytes = 4;
         int positionSize = 3;
-        glVertexAttribPointer(0, positionSize, GL_FLOAT, false, positionSize* floatSizeBytes, 0);
+        int colorSize = 4;
+        int vertexSizeBytes = (positionSize + colorSize) * floatSizeBytes;
+
+        glVertexAttribPointer(0, positionSize, GL_FLOAT, false, vertexSizeBytes, 0);
         glEnableVertexAttribArray(0);
 
+        glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, positionSize * floatSizeBytes);
+        glEnableVertexAttribArray(1);
 
-        int ibo; // Index buffer object.
-        ibo = glGenBuffers();
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo); //ELEMENT ARRAY BUFFER PARA INDICES
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices, GL_STATIC_DRAW);
+        ibo = new IndexBuffer(indices);
 
-
-        // Vertex Arrays. Not to confuse with vertex Buffer.
-        // OpenGL specific.
-
-        // Purpose:Not map every time for a different vertex buffer object. VBO.
 
     }
 
     public void update( float dt ) {
 
+        defaultShader.bind();
+        glBindVertexArray(vaoID); // Vao se encarga de vbo y el layout.
+        ibo.bind();
+
         // Count: number of indices
         glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0 ); // Uses an Element/Index Buffer.
 
-        // Index Buffer + Vertex Buffer + drawElements.
+
+        ibo.unBind();
+        glBindVertexArray(0);
+        defaultShader.unbind();
 
     }
 

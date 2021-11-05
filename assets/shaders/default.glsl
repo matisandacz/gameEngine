@@ -5,12 +5,12 @@ layout (location=1) in vec4 aColor;
 
 out vec4 fColor;
 
-uniform mat4 mvp;
+uniform mat4 transformation;
 
 void main()
 {
     fColor = aColor;
-    gl_Position = mvp * vec4(aPos,1.0);
+    gl_Position = transformation * vec4(aPos,1.0);
 }
 
 #type fragment
@@ -19,9 +19,7 @@ void main()
 in vec4 fColor;
 out vec4 color;
 
-uniform vec4 u_Color;
-
 void main()
 {
-    color = u_Color;
+    color = fColor;
 }

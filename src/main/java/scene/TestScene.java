@@ -1,7 +1,10 @@
 package scene;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
+import renderer.Shader;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -12,18 +15,23 @@ import static org.lwjgl.opengl.GL20.*;
 
 public class TestScene extends Scene{
 
-    private int vertexID, fragmentID, shaderProgram;
+    private Shader defaultShader;
 
-    private VertexBuffer vb;
+    //private VertexBuffer vb;
     private IndexBuffer ib;
 
-    private final float[] vertexArray = {
+    //private int vaoID;
+
+    /*
+    private float[] vertexArray = {
             // position               // color
-            0.5f, -0.5f, 0.0f,       1.0f, 0.0f, 0.0f, 1.0f, // Bottom right 0
-            -0.5f,  0.5f, 0.0f,       0.0f, 1.0f, 0.0f, 1.0f, // Top left     1
-            0.5f,  0.5f, 0.0f ,      1.0f, 0.0f, 1.0f, 1.0f, // Top right    2
-            -0.5f, -0.5f, 0.0f,       1.0f, 1.0f, 0.0f, 1.0f, // Bottom left  3
+            0.5f, -0.5f, 0f,       1.0f, 0.0f, 0.0f, 1.0f, // Bottom right 0
+            -0.5f,  0.5f, 0f,       0.0f, 1.0f, 0.0f, 1.0f, // Top left     1
+            0.5f,  0.5f, 0f ,      1.0f, 0.0f, 1.0f, 1.0f, // Top right    2
+            -0.5f, -0.5f, 0f,       1.0f, 1.0f, 0.0f, 1.0f // Bottom left  3
     };
+
+     */
 
     // IMPORTANT: Must be in counter-clockwise order
     private final int[] elementArray = {
@@ -35,110 +43,34 @@ public class TestScene extends Scene{
             0, 1, 3 // bottom left triangle
     };
 
-    private int vaoID;
-
-    private String vertexShaderSrc = "#version 330 core\n" +
-            "layout (location=0) in vec3 aPos;\n" +
-            "layout (location=1) in vec4 aColor;\n" +
-            "\n" +
-            "out vec4 fColor;\n" +
-            "\n" +
-            "uniform mat4 mvp;\n" +
-            "\n" +
-            "void main()\n" +
-            "{\n" +
-            "    fColor = aColor;\n" +
-            "    gl_Position = mvp * vec4(aPos,1.0);\n" +
-            "}";
-
-    private String fragmentShaderSrc = "#version 330 core\n" +
-            "\n" +
-            "in vec4 fColor;\n" +
-            "out vec4 color;\n" +
-            "\n" +
-            "uniform vec4 u_Color;\n" +
-            "\n" +
-            "void main()\n" +
-            "{\n" +
-            "    color = u_Color;\n" +
-            "}";
+    // Transformation matrix
+    private Matrix4f transformation = new Matrix4f();
 
     // Load and compile vertex and fragment shader.
     // Link shaders.
     @Override
     public void init() {
-        // First load and compile the vertex shader.
-        vertexID = glCreateShader(GL_VERTEX_SHADER);
 
-        // Pass the shader source to the GPU
-        glShaderSource(vertexID, vertexShaderSrc);
-        glCompileShader(vertexID);
+        defaultShader = new Shader("assets/shaders/default.glsl");
+        defaultShader.compile();
 
-        int success = glGetShaderi(vertexID, GL_COMPILE_STATUS);
-        if (success == GL_FALSE) {
-            int len = glGetShaderi(vertexID, GL_INFO_LOG_LENGTH);
-            System.out.println("ERROR: 'defaultShader.glsl'\n\tVertex shader compilation failed.");
-            System.out.println(glGetShaderInfoLog(vertexID, len));
-            assert false : "";
-        }
+        Vector4f color = new Vector4f(0.1f, 0.0f, 0.9f, 0.0f);
+        defaultShader.setUniform4fv("u_Color", color);
 
-        // Fragment shader
-        fragmentID = glCreateShader(GL_FRAGMENT_SHADER);
-        // Pass the shader source to the GPU
-        glShaderSource(fragmentID, fragmentShaderSrc);
-        glCompileShader(fragmentID);
-
-        // Check for errors in compilation
-        success = glGetShaderi(fragmentID, GL_COMPILE_STATUS);
-        if (success == GL_FALSE) {
-            int len = glGetShaderi(fragmentID, GL_INFO_LOG_LENGTH);
-            System.out.println("ERROR: 'defaultShader.glsl'\n\tFragment shader compilation failed.");
-            System.out.println(glGetShaderInfoLog(fragmentID, len));
-            assert false : "";
-        }
-
-        // Link shaders and check for errors...
-        shaderProgram = glCreateProgram();
-        glAttachShader(shaderProgram, vertexID);
-        glAttachShader(shaderProgram, fragmentID);
-        glLinkProgram(shaderProgram);
-
-        // Check for linking errors
-        success = glGetProgrami(shaderProgram, GL_LINK_STATUS);
-        if (success == GL_FALSE) {
-            int len = glGetProgrami(shaderProgram, GL_INFO_LOG_LENGTH);
-            System.out.println("ERROR: 'defaultShader.glsl'\n\tLinking of shaders failed.");
-            System.out.println(glGetProgramInfoLog(shaderProgram, len));
-            assert false : "";
-        }
-
-        // Set color uniform variable
-        glUseProgram(shaderProgram);
-        int Colorlocation = glGetUniformLocation(shaderProgram, "u_Color");
-        glUniform4f(Colorlocation, 0.2f, 0.3f, 0.8f, 1.0f);
-
-        // Set matrix uniform variable
-        glUseProgram(shaderProgram);
-        int mvpLocation = glGetUniformLocation(shaderProgram, "mvp");
-        Matrix4f mvpMatrix = new Matrix4f();
-        mvpMatrix.identity();
-        FloatBuffer matBuffer = BufferUtils.createFloatBuffer(16);
-        mvpMatrix.get(matBuffer);
-        glUniformMatrix4fv(mvpLocation, false, matBuffer);
-
+        transformation.identity();
+        //transformation.ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
+        defaultShader.setUniformMat4f("transformation", transformation);
 
         // ============================================================
         // Generate VAO, VBO, and EBO buffer objects, and send to GPU
         // ============================================================
 
-
         // Create VAO and bind. VAO = Vertex Array.
-        vaoID = glGenVertexArrays();
-        glBindVertexArray(vaoID);
+        //vaoID = glGenVertexArrays();
+        //glBindVertexArray(vaoID);
 
         // Create vertex buffer. 1 Vertex may be composed of many attributes.
-        vb = new VertexBuffer(vertexArray);
-
+        //vb = new VertexBuffer(vertexArray);
 
         // Layout of Vertex Buffer.
         int positionsSize = 3;
@@ -155,20 +87,25 @@ public class TestScene extends Scene{
         // Create EBO. Index Buffer/Element buffer Object.
         ib = new IndexBuffer(elementArray);
 
-
     }
 
     @Override
     public void update(float dt) {
-        System.out.println(1 / dt + " FPS");
+        //System.out.println(1 / dt + " FPS");
 
         // Bind shader program
-        glUseProgram(shaderProgram);
+        defaultShader.bind();
+        //defaultShader.setUniformMat4f("transformation", transformation);
+
+        // Update transformation matrix.
+
         // Bind the VAO that we're using
-        glBindVertexArray(vaoID);
-        // Bind element buffer
-        //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eboID);
+        //glBindVertexArray(vaoID);
+
+        // Bind element/index buffer
         ib.bind();
+
+        //vb.bind();
 
         // Enable the vertex attribute pointers
         glEnableVertexAttribArray(0);
@@ -182,9 +119,11 @@ public class TestScene extends Scene{
 
         ib.unBind();
 
+        //vb.unBind();
+
         glBindVertexArray(0);
 
-        glUseProgram(0);
+        defaultShader.unbind();
     }
 
 }

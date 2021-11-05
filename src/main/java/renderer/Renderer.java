@@ -1,4 +1,4 @@
-package scene;
+package renderer;
 
 public class Renderer {
 

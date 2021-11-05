@@ -108,8 +108,8 @@ public class Window {
             glfwPollEvents();
 
             if (dt > 0) {
-                testScene.update(dt);
-                //theCherno.update(dt);
+                //testScene.update(dt);
+                theCherno.update(dt);
             }
 
             // FPS = 1/dt

@@ -14,12 +14,21 @@ TheCherno: 13-17.
 5) Abstracting openGL into classes.
 .) Extract vertex buffer and index buffer into classes. OK
 .) Extract vertex array
-.) Extract shaders.
+.) Extract shaders. OK.
 
-6) Creating a renderer with a 3D camera.
-.) Added uniform camera to shader. OK.
-.) TODO: create a class to setup the matrices given some parameters.
-and render some 3D cube.
+6) Creating a CAMERA.
+TODO: We need to convert vertices to canonical view volume [-1,1] ** 3.
+How?
+Book: Mvp (Not needed in openGl, creo. Se encarga de mandar todo a la pantalla) <- Orthographic projection <- Camera
+Forma 2) Reemplazo Ortographic por: Orthographic<-Perspective
+
+Otra: POV. ESTA!!
+(tp4, me deja todo en canonico) PERSPECTIVE DE POV<-CAMERA TRANSFORMS.
+
+Los parametros van a controlar la ccamera transform.
+Gralmente la perspective va a quedar fija.
+
+PREGUNTA: PORQUE BORRE EL VERTEX BUFFER Y ANDA IGUAL WTF......
 
 
 7) Textures
