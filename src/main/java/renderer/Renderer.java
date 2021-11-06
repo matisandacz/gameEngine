@@ -13,8 +13,8 @@ public class Renderer {
 
     public Renderer() {
         model.identity();
-        //model.translate(1.0f, -1.0f, 0.0f);
-        //model.rotate((float) Math.toRadians(-55.0f), new Vector3f(1.0f, 0.0f, 0.0f));
+        model.translate(0f, -2f, 0f);
+        //model.rotate((float) Math.toRadians(-75.0f), new Vector3f(1.0f, 0.0f, 0.0f));
 
         projection.identity();
         projection.perspective(FOV, (float) Window.width/(float)Window.height, 0.1f, 100.0f);

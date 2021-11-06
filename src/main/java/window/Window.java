@@ -88,6 +88,7 @@ public class Window {
 
         // Set the clear color
         glClearColor(0f, 0f, 0f, 0.0f);
+        glFlush();
         glEnable(GL_DEPTH_TEST);
 
         // Makes the mouse invisible and forces it to stay inside the window.
@@ -108,13 +109,14 @@ public class Window {
         // the window or has pressed the ESCAPE key.
         while ( !glfwWindowShouldClose(window) ) {
 
-
-            glfwSwapBuffers(window); // swap the color buffers
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+
+
+
 
             // Poll for window events. The key callback above will only be
             // invoked during this call.
-            glfwPollEvents();
+
 
 
 
@@ -123,12 +125,15 @@ public class Window {
                 theCherno.update(dt);
             }
 
+            glfwSwapBuffers(window); // swap the color buffers
+            glfwPollEvents();
 
 
             // FPS = 1/dt
             endTime = Time.getTime();
             dt = endTime - beginTime;
             beginTime = endTime;
+
 
 
 

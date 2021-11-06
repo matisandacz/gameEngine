@@ -50,19 +50,16 @@ public class theChernoClass {
 
         texture = new Texture("assets/images/wall.jpg");
 
-        /*
+
         float[] vertexArray = {
                 // position               // color                      // Texture coordinates
-                5.0f,  5.0f, 0f ,      1.0f, 0.0f, 1.0f, 1.0f,          1, 1,                                    // Top right    2
-                -5.0f,  5.0f, 0f,       0.0f, 1.0f, 0.0f, 1.0f,         0, 1,                                        // Top left     1
-                5.0f, -5.0f, 0f,       1.0f, 0.0f, 0.0f, 1.0f,          1, 0,                                        // Bottom right 0
-                -5.0f, -5.0f, 0f,       1.0f, 0.0f, 0.0f, 1.0f,         0, 0,                                        // Bottom Left 0
-                -5.0f,  5.0f, 0f,       0.0f, 1.0f, 0.0f, 1.0f,         0, 1,                                        // Top left     1
-                5.0f, -5.0f, 0f,       1.0f, 0.0f, 0.0f, 1.0f,          1, 0,                                        // Bottom right 0
+                50.0f,  0f, -50.0f ,              50, 50,                                    // Top right    2
+                -50.0f,  0f, 50.0f,             0, 50,                                        // Top left     1
+                50.0f, 0f, 50.0f,                50, 0,                                        // Bottom right 0
+                -50.0f, 0, -50.0f,              0, 0,                                        // Bottom Left 0
+                -50.0f,  0f,50.0f,             0, 50,                                        // Top left     1
+                50.0f, 0f, -50.0f,                 50, 0,                                        // Bottom right 0
         };
-
-         */
-
 
         /* CON INDICES
         float[] vertexArray = {
@@ -75,7 +72,7 @@ public class theChernoClass {
          */
 
 
-
+        /*
         float vertexArray[] = {
                 -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
                 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
@@ -120,6 +117,8 @@ public class theChernoClass {
                 -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
         };
 
+         */
+
         vaoID = glGenVertexArrays();
         glBindVertexArray(vaoID);
 
@@ -155,12 +154,6 @@ public class theChernoClass {
         glBindVertexArray(vaoID); // Vao se encarga de vbo y el layout.
         ibo.bind();
 
-        //float radius = 10.0f;
-        //float camX = (float) (Math.sin(glfwGetTime()) * radius);
-        //float camZ = (float) (Math.cos(glfwGetTime()) * radius);
-        //float camX = (float) glfwGetTime();
-        //camera.setPosition(-camX, 0, 5);
-
         Camera.processKeyboard();
 
         defaultShader.setUniformMat4f("model", renderer.getModel());
@@ -173,7 +166,7 @@ public class theChernoClass {
 
 
         //glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0 ); // Uses an Element/Index Buffer.
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         texture.unbind();
         ibo.unBind();

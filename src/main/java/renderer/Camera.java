@@ -57,8 +57,8 @@ public class Camera {
         if (Renderer.FOV < 1.0f) {
             Renderer.FOV = 1.0f;
         }
-        if (Renderer.FOV > 45.0f) {
-            Renderer.FOV = 45.0f;
+        if (Renderer.FOV > 55.0f) {
+            Renderer.FOV = 55.0f;
         }
     }
 
