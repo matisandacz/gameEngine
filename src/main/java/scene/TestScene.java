@@ -5,6 +5,7 @@ import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
 import renderer.Shader;
+import window.Window;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -46,6 +47,8 @@ public class TestScene extends Scene{
     // Transformation matrix
     private Matrix4f transformation = new Matrix4f();
 
+    private Matrix4f testTransform = new Matrix4f();
+
     // Load and compile vertex and fragment shader.
     // Link shaders.
     @Override
@@ -57,9 +60,14 @@ public class TestScene extends Scene{
         Vector4f color = new Vector4f(0.1f, 0.0f, 0.9f, 0.0f);
         defaultShader.setUniform4fv("u_Color", color);
 
-        transformation.identity();
+        //transformation.identity();
         //transformation.ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
+        //defaultShader.setUniformMat4f("transformation", transformation);
+
+        testTransform.identity();
+        testTransform.perspective((float) Math.toRadians(45.0f), (float)Window.width/(float)Window.height, 0.1f, 100.0f);
         defaultShader.setUniformMat4f("transformation", transformation);
+
 
         // ============================================================
         // Generate VAO, VBO, and EBO buffer objects, and send to GPU

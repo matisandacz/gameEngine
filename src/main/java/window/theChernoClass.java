@@ -1,14 +1,20 @@
 package window;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.joml.Vector4f;
 import org.lwjgl.BufferUtils;
+import renderer.Camera;
+import renderer.Renderer;
 import renderer.Shader;
+import renderer.Texture;
 import scene.IndexBuffer;
 import scene.VertexBuffer;
 
 import java.nio.FloatBuffer;
 
+import static java.lang.Math.cos;
+import static org.lwjgl.glfw.GLFW.glfwGetTime;
 import static org.lwjgl.opengl.ARBVertexArrayObject.glBindVertexArray;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL15C.GL_ARRAY_BUFFER;
@@ -27,27 +33,91 @@ public class theChernoClass {
     };
 
     private Shader defaultShader;
-    private Matrix4f transformation = new Matrix4f();
+
     private VertexBuffer vbo;
     private IndexBuffer ibo;
 
     private int vaoID;
+
+    private Renderer renderer = new Renderer();
+    private Camera camera = new Camera();
+    private Texture texture;
 
     public void init() {
 
         defaultShader = new Shader("assets/shaders/default.glsl");
         defaultShader.compile();
 
-        transformation.identity();
-        transformation.ortho(-6.0f, 5.0f, -5.0f, 5.0f, -5.0f, 5.0f);
-        defaultShader.setUniformMat4f("transformation", transformation);
+        texture = new Texture("assets/images/wall.jpg");
 
+        /*
+        float[] vertexArray = {
+                // position               // color                      // Texture coordinates
+                5.0f,  5.0f, 0f ,      1.0f, 0.0f, 1.0f, 1.0f,          1, 1,                                    // Top right    2
+                -5.0f,  5.0f, 0f,       0.0f, 1.0f, 0.0f, 1.0f,         0, 1,                                        // Top left     1
+                5.0f, -5.0f, 0f,       1.0f, 0.0f, 0.0f, 1.0f,          1, 0,                                        // Bottom right 0
+                -5.0f, -5.0f, 0f,       1.0f, 0.0f, 0.0f, 1.0f,         0, 0,                                        // Bottom Left 0
+                -5.0f,  5.0f, 0f,       0.0f, 1.0f, 0.0f, 1.0f,         0, 1,                                        // Top left     1
+                5.0f, -5.0f, 0f,       1.0f, 0.0f, 0.0f, 1.0f,          1, 0,                                        // Bottom right 0
+        };
+
+         */
+
+
+        /* CON INDICES
         float[] vertexArray = {
                 // position               // color
-                5.5f, -5.5f, 0f,       1.0f, 0.0f, 0.0f, 1.0f, // Bottom right 0
-                -5.5f,  5.5f, 0f,       0.0f, 1.0f, 0.0f, 1.0f, // Top left     1
-                5.5f,  5.5f, 0f ,      1.0f, 0.0f, 1.0f, 1.0f, // Top right    2
-                -5.5f, -5.5f, 0f,       1.0f, 1.0f, 0.0f, 1.0f // Bottom left  3
+                5.0f, -5.0f, -5.0f,       1.0f, 0.0f, 0.0f, 1.0f, // Bottom right 0
+                -5.0f,  5.0f, -5.0f,       0.0f, 1.0f, 0.0f, 1.0f, // Top left     1
+                5.0f,  5.0f, -5.0f ,      1.0f, 0.0f, 1.0f, 1.0f, // Top right    2
+        };
+
+         */
+
+
+
+        float vertexArray[] = {
+                -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+                0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+                0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+                0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+                0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+                -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+                -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+                -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+                -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+                0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+                0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+                0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+                0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+                0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+                0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+                -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+                -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+                0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+                0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+                -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+                -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
         };
 
         vaoID = glGenVertexArrays();
@@ -58,18 +128,25 @@ public class theChernoClass {
         // Layout of Vertex Buffer.
         int floatSizeBytes = 4;
         int positionSize = 3;
-        int colorSize = 4;
-        int vertexSizeBytes = (positionSize + colorSize) * floatSizeBytes;
+        int textureSize = 2;
+        int vertexSizeBytes = (positionSize + textureSize) * floatSizeBytes;
 
         glVertexAttribPointer(0, positionSize, GL_FLOAT, false, vertexSizeBytes, 0);
         glEnableVertexAttribArray(0);
 
-        glVertexAttribPointer(1, colorSize, GL_FLOAT, false, vertexSizeBytes, positionSize * floatSizeBytes);
+        glVertexAttribPointer(1, textureSize, GL_FLOAT, false, vertexSizeBytes, (positionSize ) * floatSizeBytes);
         glEnableVertexAttribArray(1);
 
         ibo = new IndexBuffer(indices);
 
+        defaultShader.setUniformMat4f("model", renderer.getModel());
+        defaultShader.setUniformMat4f("view", camera.getView());
+        defaultShader.setUniformMat4f("projection", renderer.getProjection());
 
+    }
+
+    public float getTime() {
+        return (float) ((float) System.nanoTime() / 1000000000.0);
     }
 
     public void update( float dt ) {
@@ -78,10 +155,27 @@ public class theChernoClass {
         glBindVertexArray(vaoID); // Vao se encarga de vbo y el layout.
         ibo.bind();
 
-        // Count: number of indices
-        glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0 ); // Uses an Element/Index Buffer.
+        //float radius = 10.0f;
+        //float camX = (float) (Math.sin(glfwGetTime()) * radius);
+        //float camZ = (float) (Math.cos(glfwGetTime()) * radius);
+        //float camX = (float) glfwGetTime();
+        //camera.setPosition(-camX, 0, 5);
+
+        Camera.processKeyboard();
+
+        defaultShader.setUniformMat4f("model", renderer.getModel());
+        defaultShader.setUniformMat4f("view", camera.getView());
+        defaultShader.setUniformMat4f("projection", renderer.getProjection());
+
+        defaultShader.uploadTexture("TEX_SAMPLER", 0);
+        glActiveTexture(GL_TEXTURE0);
+        texture.bind();
 
 
+        //glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_INT, 0 ); // Uses an Element/Index Buffer.
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        texture.unbind();
         ibo.unBind();
         glBindVertexArray(0);
         defaultShader.unbind();

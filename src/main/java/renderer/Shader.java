@@ -132,6 +132,12 @@ public class Shader {
         glUniform4fv(location, floatBuffer);
     }
 
+    public void uploadTexture(String varName, int slot) {
+        glUseProgram(shaderProgramID);
+        int location = glGetUniformLocation(shaderProgramID, varName);
+        glUniform1i(location, slot);
+    }
+
 
 
 }

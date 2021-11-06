@@ -1,6 +1,7 @@
 package window;
 
 import eventListener.KeyListener;
+import eventListener.MouseListener;
 import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
@@ -15,8 +16,9 @@ import static org.lwjgl.opengl.GL11C.*;
 
 public class Window {
 
-    private long window;
-    private int width, height;
+    public static long window;
+    public static int width, height;
+    public static float dt;
     private String title;
 
     public Window(int width, int height, String title) {
@@ -60,7 +62,10 @@ public class Window {
             throw new RuntimeException("Failed to create the GLFW window");
 
         // Set event callback
-        glfwSetKeyCallback(window, KeyListener::key_callback);
+        //glfwSetKeyCallback(window, KeyListener::key_callback);
+        // Mouse callbacks
+        glfwSetCursorPosCallback(window, MouseListener::mouse_callback);
+        glfwSetScrollCallback(window, MouseListener::scroll_callback);
 
         // Make the OpenGL context current
         glfwMakeContextCurrent(window);
@@ -83,10 +88,14 @@ public class Window {
 
         // Set the clear color
         glClearColor(0f, 0f, 0f, 0.0f);
+        glEnable(GL_DEPTH_TEST);
+
+        // Makes the mouse invisible and forces it to stay inside the window.
+        //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
         float beginTime = Time.getTime();
         float endTime = Time.getTime();
-        float dt = -1;
+        dt = 0;
 
         // Create and initialize scene.
         Scene testScene = new TestScene();
@@ -99,18 +108,22 @@ public class Window {
         // the window or has pressed the ESCAPE key.
         while ( !glfwWindowShouldClose(window) ) {
 
-            //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
             glfwSwapBuffers(window); // swap the color buffers
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
 
             // Poll for window events. The key callback above will only be
             // invoked during this call.
             glfwPollEvents();
 
+
+
             if (dt > 0) {
                 //testScene.update(dt);
                 theCherno.update(dt);
             }
+
+
 
             // FPS = 1/dt
             endTime = Time.getTime();
